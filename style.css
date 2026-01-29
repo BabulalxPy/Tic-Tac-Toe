@@ -1,0 +1,10 @@
+.magic{
+    background-color: pink;
+    color: aqua;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 500px;
+    border: 1px solid;
+    font-size: xx-large;
+};
