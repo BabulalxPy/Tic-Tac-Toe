@@ -1,66 +1,150 @@
-const booze = (name, alcohol_perc, type) => {
-    const partyPool = () => alert('its ' + type + ' crazy ' + name);
-    const getPerc = () => alert(alcohol_perc + ' % alcohol');
+//Gameboard where play happens
+const Gameboard = (() => {
+    //initial gamebaord as empty
+    let gameboard = ["", "", "", "", "", "", "", "", ""];
 
-    return {partyPool, getPerc};
+    const getBoard = () => gameboard;
+
+    //marking the board
+    let activePlayer = "X";
+
+    const playTurn = (index) =>{
+        //check if the board index is empty or not
+        if(gameboard[index] === ""){
+            gameboard[index] = activePlayer;
+            console.log(gameboard);
+        }else{
+            return;
+        }
+        //For next turn, marker changes for other player
+        if(activePlayer === "X"){
+            activePlayer = "O";
+        }else if(activePlayer === "O"){
+            activePlayer = "X";
+        };
+    };
+    //resets the board
+    const resetBoard = () => {
+        gameboard = ["", "", "", "", "", "", "", "", ""];
+    }
+
+    return {playTurn, getBoard, resetBoard};
+})();
+
+//Creating players
+const createPlayer = (name, marking) =>{
+    score = 0;
+    
 };
 
-const drink1 = booze('BUDWEISER MAGNUM','8','BEER');
-const drink2 = booze('ABSOLUT VODKA', '45', 'VODKA');
-const drink3 = booze('BLUE LABEL', '45', 'WHISKEY');
-drink2.alcohol_perc = 100;
+//winning logic here
+const GameOver = (() => {
 
-drink3.getPerc();
-drink1.partyPool();
-drink2.partyPool();
+    winCombos = [[0,1,2],[3,4,5],[6,7,8],
+                 [0,3,6],[1,4,7],[2,5,8],
+                 [0,4,8],[2,4,6]];
 
+    const checkWin = () =>{
 
+        let winner = "";
 
-// THE TEMPLATE
-const createItem = (name, type) => {
-    // 1. Private Variables (The Closure) - Outside world can't touch these
-    let health = 100;
+        winCombos.forEach((array) => {
 
-    // 2. The Functions (The Tools)
-    const getHit = () => {
-        health -= 10;
-        console.log(`${name} health is now ${health}`);
+            const currentBoard = Gameboard.getBoard();
+
+            if(currentBoard[array[0]] === currentBoard[array[1]] && 
+               currentBoard[array[1]] === currentBoard[array[2]] && 
+               currentBoard[array[0]] !== "" && currentBoard[array[2]] !== ""){
+                winner = currentBoard[array[0]];
+                //console.log("winner is " + winner);
+            }
+        });
+        return winner;
+    }
+
+    const checkDraw = () => {
+
+        const currentBoard = Gameboard.getBoard();
+        console.log(currentBoard);
+        
+        const isBoardFull = currentBoard.every((cell) => {
+            return cell !== "";
+        });
+        if(isBoardFull){
+            console.log("draw");
+            return "draw";
+        };
+
     };
+    
+    return {checkWin, checkDraw};
+    
+})();
 
-    const getStatus = () => console.log(name, type);
+//Gameboard.playTurn(1);
+//Gameboard.playTurn(2);
+//Gameboard.playTurn(3);
+//Gameboard.playTurn(5);
+//Gameboard.playTurn(4);
+//Gameboard.playTurn(6);
+//Gameboard.playTurn(7);
+//Gameboard.playTurn(8);
 
-    // 3. The Return (The Public Interface)
-    // Only return what you want the world to use!
-    return { getHit, getStatus };
+//GameEnd result
+const GameResult = () =>{
+    const winner_player = GameOver.checkWin();
+    console.log(winner_player);
+    let status = "";
+    if(winner_player === "X" || winner_player === "O"){
+
+        console.log("winner is " + winner_player);
+        status = winner_player + " Player Won";
+    }else{
+        GameOver.checkDraw();
+        status = "DRAW";
+    };
+    return status;
 };
 
-// USAGE
-const enemy1 = createItem('Goblin', 'Minion');
-enemy1.getHit(); // Works! -> "Goblin health is now 90"
-// enemy1.health = 0; // FAILS. Cannot access private variable.
 
 
-// THE TEMPLATE
-const GameController = (() => {
-    // 1. Private State
-    let turnCount = 0;
-    const board = ["", "", ""];
+function grid(){
 
-    // 2. Private Helper Function (Internal use only)
-    const _checkWin = () => console.log("Checking win conditions...");
+    const container = document.querySelector("div");
 
-    // 3. Public Functions
-    const playTurn = () => {
-        turnCount++;
-        _checkWin(); // We can use private stuff internally
-        console.log(`Turn ${turnCount} played.`);
-    };
+    const player = document.createElement("div");
+    player.classList.add("player");
+    player.textContent = "Player X Turn";
 
-    // 4. Return Object
-    return { playTurn };
-})(); // <--- THE PARENTHESES () RUN IT INSTANTLY
+    const grid = document.createElement("div");
+    grid.classList.add("grid");
 
-// USAGE
-GameController.playTurn(); // Works!
-// GameController._checkWin(); // ERROR. It's private.
-// const newGame = GameController(); // ERROR. It's not a factory.
+    for(let i = 0; i < 9; i++){
+        const box = document.createElement("button");
+        box.classList.add("cell");
+        box.addEventListener("click", () =>{
+        
+            Gameboard.playTurn(i);
+            
+            if(Gameboard.getBoard()[i] === "X"){
+                player.textContent = "Player O's Turn";
+            }else{
+                player.textContent = "Players X's Turn";
+            }
+            
+            box.textContent = Gameboard.getBoard()[i];
+        });
+        grid.appendChild(box);
+    }
+    
+    const disp_status = document.createElement("h2");
+    disp_status.classList.add("dis_status");
+    disp_status.textContent = GameResult();
+    
+    container.appendChild(disp_status);
+    container.appendChild(player);
+    container.appendChild(grid);
+
+};
+
+grid();
